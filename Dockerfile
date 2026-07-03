@@ -12,6 +12,6 @@ RUN unzip /tmp/pb.zip -d /pb/ && rm /tmp/pb.zip
 WORKDIR /app
 RUN mkdir -p /app/pb_data
 
-EXPOSE 8090
+EXPOSE $PORT
 
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090", "--dir=/app/pb_data"]
+CMD /pb/pocketbase serve --http=0.0.0.0:${PORT:-8090} --dir=/app/pb_data
