@@ -30,14 +30,13 @@ RUN chown -R appuser:appgroup /app
 
 USER appuser
 
-ENV PB_DIR="/app/pb_data"
-ENV PB_HTTP="0.0.0.0:8090"
+ENV PB_HTTP="0.0.0.0:${PORT}"
 
-RUN mkdir -p ${PB_DIR} && chown -R appuser:appgroup ${PB_DIR}
+RUN mkdir -p /app/pb_data && chown -R appuser:appgroup /app/pb_data
 
-EXPOSE 8090
+EXPOSE ${PORT}
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8090/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/ || exit 1
 
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]
+CMD ["/pb/pocketbase", "serve", "--dir=/app/pb_data", "--http=0.0.0.0:${PORT}"]
