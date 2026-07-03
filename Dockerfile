@@ -14,16 +14,15 @@ FROM alpine:3.19
 RUN apk add --no-cache \
     ca-certificates \
     tzdata \
-    wget \
+    unzip \
     && addgroup -S appgroup \
     && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-# Download PocketBase
-ARG PB_VERSION=0.25.1
-RUN wget -O pocketbase "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64" \
-    && chmod +x pocketbase
+ARG PB_VERSION=0.22.18
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
+RUN unzip /tmp/pb.zip -d /pb/ && rm /tmp/pb.zip
 
 COPY --from=builder /app .
 
@@ -41,4 +40,4 @@ EXPOSE 8090
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8090/ || exit 1
 
-CMD ["./pocketbase", "serve", "--http=0.0.0.0:8090"]
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]
