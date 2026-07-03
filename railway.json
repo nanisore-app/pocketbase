@@ -1,0 +1,46 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install --omit=dev",
+    "watchPatterns": [
+      "pb_*.json",
+      "pb_*.js",
+      "Dockerfile",
+      "railway.json",
+      "scripts/**"
+    ]
+  },
+  "deploy": {
+    "startCommand": "npm run start",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "environments": {
+      "development": {
+        "variables": {
+          "PB_ENCRYPTION_KEY": "${PB_ENCRYPTION_KEY}",
+          "DATABASE_URL": "${DATABASE_URL}"
+        }
+      },
+      "production": {
+        "variables": {
+          "PB_ENCRYPTION_KEY": "${PB_ENCRYPTION_KEY}",
+          "DATABASE_URL": "${DATABASE_URL}",
+          "PB_HEALTHCHECKHZ": "1"
+        },
+        "deploy": {
+          "startTimeout": 120,
+          "restartPolicyType": "ON_FAILURE",
+          "restartPolicyMaxRetries": 10
+        }
+      }
+    }
+  },
+  "addons": [
+    {
+      "plan": "postgres",
+      "name": "postgres",
+      "healthCheckPath": "/health"
+    }
+  ]
+}

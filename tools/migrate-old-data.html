@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Causaloop 数据迁移工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .section h2 {
+            color: #555;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #4f46e5;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #10b981;
+        }
+        .btn-secondary:hover {
+            background: #059669;
+        }
+        .btn-warning {
+            background: #f59e0b;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .file-drop {
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .file-drop:hover,
+        .file-drop.dragover {
+            border-color: #6366f1;
+            background: #f0f0ff;
+        }
+        .file-drop p {
+            color: #888;
+            margin-top: 8px;
+        }
+        .output-area {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        .stat-card .label {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Causaloop 数据迁移工具</h1>
+    <div class="container">
+        <div class="section">
+            <h2>1. 连接 PocketBase</h2>
+            <div class="form-group">
+                <label for="pbUrl">PocketBase URL</label>
+                <input type="text" id="pbUrl" placeholder="http://localhost:8090">
+            </div>
+            <div class="form-group">
+                <label for="adminEmail">管理员邮箱</label>
+                <input type="email" id="adminEmail" placeholder="admin@example.com">
+            </div>
+            <div class="form-group">
+                <label for="adminPassword">管理员密码</label>
+                <input type="password" id="adminPassword" placeholder="password">
+            </div>
+            <button onclick="authenticate()">登录</button>
+        </div>
+
+        <div class="section">
+            <h2>2. 选择数据文件</h2>
+            <div class="file-drop" id="fileDrop">
+                <input type="file" id="fileInput" multiple accept=".json" style="display: none;">
+                <p>点击或拖拽 JSON 文件到此处</p>
+                <p style="font-size: 0.85em; color: #aaa;">支持 rules、guas、dogma 等 Causaloop 导出的 JSON 文件</p>
+            </div>
+            <div id="fileList" style="margin-top: 12px;"></div>
+        </div>
+
+        <div class="section">
+            <h2>3. 数据预览</h2>
+            <div class="stats" id="stats"></div>
+            <div class="output-area">
+                <textarea id="preview" readonly placeholder="选择数据文件后预览将显示在这里..."></textarea>
+                <button class="copy-btn btn-secondary" onclick="copyOutput()">复制</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. 迁移操作</h2>
+            <div class="actions">
+                <button class="btn-secondary" onclick="generateOutput()">生成输出格式</button>
+                <button class="btn-warning" onclick="migrateData()">执行迁移</button>
+                <button onclick="exportJson()">导出 JSON</button>
+            </div>
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        let pbAuth = null;
+        let files = [];
+        let parsedData = { guas: [], rules: [], dogma: [] };
+
+        // File drop zone
+        const fileDrop = document.getElementById('fileDrop');
+        const fileInput = document.getElementById('fileInput');
+
+        fileDrop.addEventListener('click', () => fileInput.click());
+        fileDrop.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileDrop.classList.add('dragover');
+        });
+        fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
+        fileDrop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDrop.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(fileList) {
+            files = Array.from(fileList);
+            const fileListEl = document.getElementById('fileList');
+            fileListEl.innerHTML = files.map((f, i) =>
+                `<div style="padding: 8px; background: #f8fafc; border-radius: 4px; margin-bottom: 4px;">${f.name} (${formatFileSize(f.size)})</div>`
+            ).join('');
+            parseFiles();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function parseFiles() {
+            parsedData = { guas: [], rules: [], dogma: [] };
+
+            for (const file of files) {
+                try {
+                    const content = await file.text();
+                    const data = JSON.parse(content);
+                    const records = Array.isArray(data) ? data : (data.records || []);
+
+                    if (file.name.includes('guas') || file.name.includes('gua')) {
+                        parsedData.guas = [...parsedData.guas, ...records];
+                    } else if (file.name.includes('rules') || file.name.includes('rule')) {
+                        parsedData.rules = [...parsedData.rules, ...records];
+                    } else if (file.name.includes('dogma')) {
+                        parsedData.dogma = [...parsedData.dogma, ...records];
+                    }
+                } catch (err) {
+                    showStatus(`解析 ${file.name} 失败: ${err.message}`, 'error');
+                }
+            }
+
+            updateStats();
+            updatePreview();
+        }
+
+        function updateStats() {
+            const statsEl = document.getElementById('stats');
+            statsEl.innerHTML = `
+                <div class="stat-card">
+                    <div class="number">${parsedData.guas.length}</div>
+                    <div class="label">卦例 (guas)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${parsedData.rules.length}</div>
+                    <div class="label">规则 (rules)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${parsedData.dogma.length}</div>
+                    <div class="label">流派 (dogma)</div>
+                </div>
+            `;
+        }
+
+        function updatePreview() {
+            const output = {
+                guas: parsedData.guas.map(record => ({
+                    ...record,
+                    createdAt: record.createdAt || new Date().toISOString(),
+                    updatedAt: record.updatedAt || new Date().toISOString()
+                })),
+                rules: parsedData.rules.map(record => ({
+                    ...record,
+                    createdAt: record.createdAt || new Date().toISOString(),
+                    updatedAt: record.updatedAt || new Date().toISOString()
+                })),
+                dogma: parsedData.dogma.map(record => ({
+                    ...record,
+                    createdAt: record.createdAt || new Date().toISOString(),
+                    updatedAt: record.updatedAt || new Date().toISOString()
+                }))
+            };
+            document.getElementById('preview').value = JSON.stringify(output, null, 2);
+        }
+
+        async function authenticate() {
+            const url = document.getElementById('pbUrl').value.replace(/\/$/, '');
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            if (!url || !email || !password) {
+                showStatus('请填写所有连接信息', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${url}/api/admins/auth-with-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identity: email, password })
+                });
+
+                if (!response.ok) throw new Error('认证失败');
+
+                const data = await response.json();
+                pbAuth = data;
+                showStatus(`登录成功！管理员: ${data.admin.email}`, 'success');
+            } catch (err) {
+                showStatus(`登录失败: ${err.message}`, 'error');
+            }
+        }
+
+        async function migrateData() {
+            if (!pbAuth) {
+                showStatus('请先登录 PocketBase', 'error');
+                return;
+            }
+
+            const url = document.getElementById('pbUrl').value.replace(/\/$/, '');
+            let success = 0;
+            let errors = 0;
+
+            const collections = [
+                { name: 'guas', data: parsedData.guas },
+                { name: 'rules', data: parsedData.rules },
+                { name: 'dogma', data: parsedData.dogma }
+            ];
+
+            for (const collection of collections) {
+                if (collection.data.length === 0) continue;
+
+                for (const record of collection.data) {
+                    try {
+                        const method = record.id ? 'PUT' : 'POST';
+                        const path = record.id
+                            ? `${url}/api/collections/${collection.name}/records/${record.id}`
+                            : `${url}/api/collections/${collection.name}/records`;
+
+                        const response = await fetch(path, {
+                            method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': pbAuth.token
+                            },
+                            body: JSON.stringify({ ...record, authPlainPassword: record.password })
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json().catch(() => ({}));
+                            throw new Error(error.message || '未知错误');
+                        }
+
+                        success++;
+                    } catch (err) {
+                        errors++;
+                        console.error(`迁移 ${collection.name} 记录失败:`, err.message);
+                    }
+                }
+            }
+
+            showStatus(`迁移完成！成功: ${success}, 失败: ${errors}`, errors === 0 ? 'success' : 'error');
+        }
+
+        function generateOutput() {
+            if (files.length === 0) {
+                showStatus('请先选择数据文件', 'error');
+                return;
+            }
+            updatePreview();
+            showStatus('已生成 PocketBase 格式输出', 'info');
+        }
+
+        function exportJson() {
+            const output = document.getElementById('preview').value;
+            if (!output) {
+                showStatus('没有可导出的内容', 'error');
+                return;
+            }
+            const blob = new Blob([output], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'causaloop-migrated-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showStatus('导出成功', 'success');
+        }
+
+        function copyOutput() {
+            const preview = document.getElementById('preview');
+            navigator.clipboard.writeText(preview.value).then(() => {
+                showStatus('已复制到剪贴板', 'success');
+            });
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => { statusEl.innerHTML = ''; }, 10000);
+        }
+    </script>
+</body>
+</html>

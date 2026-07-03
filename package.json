@@ -1,0 +1,18 @@
+{
+  "name": "pocketbase-railway-template",
+  "version": "1.0.0",
+  "description": "PocketBase Railway 模板仓库",
+  "main": "index.js",
+  "scripts": {
+    "start": "./pocketbase serve --http=0.0.0.0:8090",
+    "import": "node tools/pb_upsert.js",
+    "publish": "node tools/pb_publish_collection.js"
+  },
+  "keywords": [
+    "pocketbase",
+    "railway",
+    "template"
+  ],
+  "author": "",
+  "license": "MIT"
+}

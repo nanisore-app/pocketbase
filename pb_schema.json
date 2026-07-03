@@ -1,0 +1,212 @@
+[
+  {
+    "name": "guas",
+    "type": "base",
+    "fields": [
+      {
+        "name": "id",
+        "type": "autocode",
+        "id": "autocode5id",
+        "required": false,
+        "hidden": true,
+        "system": true
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "id": "text5id",
+        "required": false,
+        "presentable": true,
+        "unique": false,
+        "validate": {}
+      },
+      {
+        "name": "userId",
+        "type": "text",
+        "id": "text6id",
+        "required": true,
+        "unique": false
+      },
+      {
+        "name": "guaInfo",
+        "type": "json",
+        "id": "json7id",
+        "required": false,
+        "system": false,
+        "excepted": false,
+        "default": "{}"
+      },
+      {
+        "name": "paInfo",
+        "type": "json",
+        "id": "json8id",
+        "required": false,
+        "system": false
+      },
+      {
+        "name": "notes",
+        "type": "text",
+        "id": "text9id",
+        "required": false,
+        "system": false
+      },
+      {
+        "name": "createdAt",
+        "type": "autoDate",
+        "id": "autodate10id",
+        "required": false,
+        "onCreate": true,
+        "onUpdate": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "autoDate",
+        "id": "autodate11id",
+        "required": false,
+        "onCreate": false,
+        "onUpdate": true
+      }
+    ]
+  },
+  {
+    "name": "rules",
+    "type": "base",
+    "fields": [
+      {
+        "name": "id",
+        "type": "autocode",
+        "id": "autocode1id",
+        "required": false,
+        "hidden": true,
+        "system": true
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "id": "text2id",
+        "required": true,
+        "presentable": true,
+        "unique": true
+      },
+      {
+        "name": "category",
+        "type": "text",
+        "id": "text3id",
+        "required": true,
+        "unique": false
+      },
+      {
+        "name": "config",
+        "type": "json",
+        "id": "json4id",
+        "required": false,
+        "system": false
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "id": "text5id",
+        "required": false,
+        "system": false
+      },
+      {
+        "name": "enabled",
+        "type": "bool",
+        "id": "bool6id",
+        "required": false,
+        "default": true,
+        "system": false
+      },
+      {
+        "name": "createdAt",
+        "type": "autoDate",
+        "id": "autodate7id",
+        "required": false,
+        "onCreate": true,
+        "onUpdate": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "autoDate",
+        "id": "autodate8id",
+        "required": false,
+        "onCreate": false,
+        "onUpdate": true
+      }
+    ]
+  },
+  {
+    "name": "dogma",
+    "type": "base",
+    "fields": [
+      {
+        "name": "id",
+        "type": "autocode",
+        "id": "autocode1id",
+        "required": false,
+        "hidden": true,
+        "system": true
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "id": "text2id",
+        "required": true,
+        "presentable": true,
+        "unique": true
+      },
+      {
+        "name": "author",
+        "type": "text",
+        "id": "text3id",
+        "required": false,
+        "unique": false
+      },
+      {
+        "name": "version",
+        "type": "text",
+        "id": "text4id",
+        "required": false,
+        "unique": false
+      },
+      {
+        "name": "rules",
+        "type": "json",
+        "id": "json5id",
+        "required": false,
+        "system": false
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "id": "text6id",
+        "required": false,
+        "system": false
+      },
+      {
+        "name": "enabled",
+        "type": "bool",
+        "id": "bool7id",
+        "required": false,
+        "default": true,
+        "system": false
+      },
+      {
+        "name": "createdAt",
+        "type": "autoDate",
+        "id": "autodate8id",
+        "required": false,
+        "onCreate": true,
+        "onUpdate": false
+      },
+      {
+        "name": "updatedAt",
+        "type": "autoDate",
+        "id": "autodate9id",
+        "required": false,
+        "onCreate": false,
+        "onUpdate": true
+      }
+    ]
+  }
+]
